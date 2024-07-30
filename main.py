@@ -18,6 +18,7 @@ sprite_background = pygame.image.load('Imagens/flappy_bird_backdrop.png')
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 velocidade = 3
+gravidade = 1
 
 
 class Bird(pygame.sprite.Sprite):
@@ -26,21 +27,39 @@ class Bird(pygame.sprite.Sprite):
         self.imagens = []
         for n in range(4):
             img = pygame.image.load('Imagens/flappy_bird.png')
-            img = img.subsurface((n * 32, 0), (32, 32))
-            img = pygame.transform.scale(img, (64, 64))
+            img = pygame.transform.scale(img.subsurface((n * 32, 0), (32, 32)), (64, 64))
             self.imagens.append(img)
         self.idx = 0
         self.image = self.imagens[self.idx]
         self.mask = pygame.mask.from_surface(self.image) # Gambiarra, mais ou menos
         self.rect = self.image.get_rect()
-        self.rect.x = 100
-        self.rect.y = 100
+        self.velocidade = 0
+        self.rect.x = 150
+        self.rect.y = 219
+        self.pulo = False
     
     def update(self) -> None:
         self.idx += 0.5
         if self.idx >= len(self.imagens):
             self.idx = 0
+        
+        self.velocidade += gravidade
+        self.rect.y += self.velocidade
+        if self.pulo:
+            self.velocidade = -10
+        
+        angulo = self.velocidade / 10 * 45
+        if angulo > 45:
+            angulo = 45
+        elif angulo < -15:
+            angulo = -15
+        
         self.image = self.imagens[int(self.idx)]
+        self.image = pygame.transform.rotate(self.image, -angulo)
+        self.pulo = False
+    
+    def pular(self) -> None:
+        self.pulo = True
 
 
 class Chao(pygame.sprite.Sprite):
@@ -91,10 +110,14 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             exit()
+        if event.type == KEYDOWN and event.key == K_SPACE:
+            bird.pular()
     
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
 
-    sprite_group_principal.update()
-    sprite_group_obstaculos.update()
+    if not pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask):
+        sprite_group_principal.update()
+        sprite_group_obstaculos.update()
+    
     pygame.display.flip()
