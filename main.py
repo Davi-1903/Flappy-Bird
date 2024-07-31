@@ -14,12 +14,14 @@ except:
     pass
 pygame.display.set_caption('Flappy Bird')
 relogio = pygame.time.Clock()
+font_pontos = pygame.font.SysFont('04b19', 60)
 sprite_background = pygame.image.load('Imagens/flappy_bird_backdrop.png')
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 velocidade = 4
 gravidade = 1.5
 inicio = False
+pontos = 0
 
 
 class Bird(pygame.sprite.Sprite):
@@ -140,10 +142,12 @@ while True:
         velocidade = 0
     
     if bird.rect.bottom - 10 >= 500:
+        bird.rect.y = 435
         inicio = False
 
     if inicio:
         sprite_group_principal.update()
         sprite_group_obstaculos.update()
     
+    janela.blit(font_pontos.render(f'{pontos:0>3}', True, (255, 255, 255)), (10, 10))
     pygame.display.flip()
