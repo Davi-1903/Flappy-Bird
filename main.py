@@ -17,8 +17,8 @@ relogio = pygame.time.Clock()
 sprite_background = pygame.image.load('Imagens/flappy_bird_backdrop.png')
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
-velocidade = 3
-gravidade = 1
+velocidade = 4
+gravidade = 1.5
 
 
 class Bird(pygame.sprite.Sprite):
@@ -31,8 +31,8 @@ class Bird(pygame.sprite.Sprite):
             self.imagens.append(img)
         self.idx = 0
         self.image = self.imagens[self.idx]
-        self.mask = pygame.mask.from_surface(self.image) # Gambiarra, mais ou menos
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
         self.velocidade = 0
         self.rect.x = 150
         self.rect.y = 219
@@ -46,16 +46,10 @@ class Bird(pygame.sprite.Sprite):
         self.velocidade += gravidade
         self.rect.y += self.velocidade
         if self.pulo:
-            self.velocidade = -10
-        
-        angulo = self.velocidade / 10 * 45
-        if angulo > 45:
-            angulo = 45
-        elif angulo < -15:
-            angulo = -15
+            self.rect.y -= 5
+            self.velocidade = -15
         
         self.image = self.imagens[int(self.idx)]
-        self.image = pygame.transform.rotate(self.image, -angulo)
         self.pulo = False
     
     def pular(self) -> None:
@@ -65,38 +59,55 @@ class Bird(pygame.sprite.Sprite):
 class Chao(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_chao.png'), (308, 112))
+        self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_chao.png'), (900, 112))
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x_pos
         self.rect.y = 500
     
     def update(self) -> None:
-        if self.rect.topright[0] <= 0:
-            self.rect.x = largura
+        if self.rect.topright[0] < 0:
+            self.rect.x = largura - 4 # Ajuste fino...
         self.rect.x -= velocidade
 
 
-class Obstaculo(pygame.sprite.Sprite):
+class ObstaculoUp(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_obstaculo.png').convert_alpha(), (52, 668))
+        self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_obstaculo_superior.png').convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image) # Gambiarra, mais ou menos
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x_pos
-        self.rect.y = randint(-156, 0)
+        self.rect.y = randint(-330, -100)
     
     def update(self) -> None:
         if self.rect.topright[0] <= 0:
-            self.rect.x = largura
-            self.rect.y = randint(-156, 0)
+            self.rect.x = largura + 173
+            self.rect.y = randint(-330, -100)
         self.rect.x -= velocidade
 
 
-for n in range(4):
-    sprite_group_obstaculos.add(Obstaculo(n * (largura // 4) + 500))
+class ObstaculoDown(pygame.sprite.Sprite):
+    def __init__(self, objeto) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_obstaculo_inferior.png').convert_alpha(), (52, 400))
+        self.rect = self.image.get_rect()
+        self.objeto = objeto
+        self.x_pos = objeto.rect.x
+        self.y_pos = objeto.rect.bottom + 128
+    
+    def update(self) -> None:
+        self.rect.x = self.objeto.rect.x
+        self.rect.y = self.objeto.rect.bottom + 128
 
-for n in range(6):
-    sprite_group_obstaculos.add(Chao(n * (largura // 3)))
+
+for n in range(5):
+    obstaculo = ObstaculoUp(n * 225 + 500)
+    sprite_group_obstaculos.add(obstaculo)
+    sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
+
+for n in range(2):
+    sprite_group_obstaculos.add(Chao(n * 900))
 
 bird = Bird()
 sprite_group_principal.add(bird)
@@ -116,8 +127,10 @@ while True:
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
 
-    if not pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask):
-        sprite_group_principal.update()
-        sprite_group_obstaculos.update()
+    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask):
+        print('Colidiu!')
+
+    sprite_group_principal.update()
+    sprite_group_obstaculos.update()
     
     pygame.display.flip()
