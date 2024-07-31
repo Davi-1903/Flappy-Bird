@@ -46,10 +46,16 @@ class Bird(pygame.sprite.Sprite):
         self.velocidade += gravidade
         self.rect.y += self.velocidade
         if self.pulo:
-            self.rect.y -= 5
+            self.rect.y -= 15
             self.velocidade = -15
         
-        self.image = self.imagens[int(self.idx)]
+        angulo = (-self.velocidade + 18) * 3
+        if angulo > 15:
+            angulo = 15
+        if angulo < -45:
+            angulo = -45
+        
+        self.image = pygame.transform.rotate(self.imagens[int(self.idx)], angulo)
         self.pulo = False
     
     def pular(self) -> None:
