@@ -19,6 +19,7 @@ sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 velocidade = 4
 gravidade = 1.5
+inicio = False
 
 
 class Bird(pygame.sprite.Sprite):
@@ -98,9 +99,9 @@ class ObstaculoDown(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(pygame.image.load('Imagens/flappy_bird_obstaculo_inferior.png').convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
         self.objeto = objeto
-        self.x_pos = objeto.rect.x
-        self.y_pos = objeto.rect.bottom + 128
+        self.update()
     
     def update(self) -> None:
         self.rect.x = self.objeto.rect.x
@@ -128,6 +129,7 @@ while True:
             pygame.quit()
             exit()
         if event.type == KEYDOWN and event.key == K_SPACE:
+            inicio = True
             bird.pular()
     
     sprite_group_obstaculos.draw(janela)
@@ -135,8 +137,13 @@ while True:
 
     if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask):
         print('Colidiu!')
+        velocidade = 0
+    
+    if bird.rect.bottom - 10 >= 500:
+        inicio = False
 
-    sprite_group_principal.update()
-    sprite_group_obstaculos.update()
+    if inicio:
+        sprite_group_principal.update()
+        sprite_group_obstaculos.update()
     
     pygame.display.flip()
