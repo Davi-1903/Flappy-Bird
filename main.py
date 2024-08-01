@@ -19,7 +19,7 @@ sprite_background = pygame.image.load('Imagens/flappy_bird_backdrop.png')
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 velocidade = 4
-gravidade = 1.5
+gravidade = 0
 inicio = False
 pontos = 0
 
@@ -52,11 +52,13 @@ class Bird(pygame.sprite.Sprite):
             self.rect.y -= 15
             self.velocidade = -15
         
-        angulo = (-self.velocidade + 18) * 3
-        if angulo > 15:
-            angulo = 15
-        if angulo < -45:
-            angulo = -45
+        angulo = 0
+        if inicio:
+            angulo = (-self.velocidade + 18) * 3
+            if angulo > 15:
+                angulo = 15
+            if angulo < -45:
+                angulo = -45
         
         self.image = pygame.transform.rotate(self.imagens[int(self.idx)], angulo)
         self.pulo = False
@@ -88,9 +90,17 @@ class ObstaculoUp(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x_pos
         self.rect.y = randint(-330, -100)
+        self.colidir = True
     
     def update(self) -> None:
+        global pontos
+
+        if self.rect.center[0] - 150 in range(0, 27) and self.colidir:
+            self.colidir = False
+            pontos += 1
+
         if self.rect.topright[0] <= 0:
+            self.colidir = True
             self.rect.x = largura + 173
             self.rect.y = randint(-330, -100)
         self.rect.x -= velocidade
@@ -111,12 +121,12 @@ class ObstaculoDown(pygame.sprite.Sprite):
 
 
 for n in range(5):
-    obstaculo = ObstaculoUp(n * 225 + 500)
+    obstaculo = ObstaculoUp(n * 225 + largura)
     sprite_group_obstaculos.add(obstaculo)
     sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
 
 for n in range(2):
-    sprite_group_obstaculos.add(Chao(n * 900))
+    sprite_group_principal.add(Chao(n * 900))
 
 bird = Bird()
 sprite_group_principal.add(bird)
@@ -141,13 +151,11 @@ while True:
         print('Colidiu!')
         velocidade = 0
     
-    if bird.rect.bottom - 10 >= 500:
-        bird.rect.y = 435
-        inicio = False
-
     if inicio:
-        sprite_group_principal.update()
+        gravidade = 1.5
         sprite_group_obstaculos.update()
+
+    sprite_group_principal.update()
     
     janela.blit(font_pontos.render(f'{pontos:0>3}', True, (255, 255, 255)), (10, 10))
     pygame.display.flip()
