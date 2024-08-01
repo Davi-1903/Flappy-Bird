@@ -23,6 +23,8 @@ font_game_over_secundaria = pygame.font.SysFont('04b19', 40)
 sprite_background = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png'))
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
+with open(os.path.join(diretorio_principal, 'recorde.txt'), 'r') as arquivo:
+    recorde = int(arquivo.read())
 velocidade = 4
 gravidade = 0
 inicio = False
@@ -189,6 +191,11 @@ while True:
     
 
     sprite_group_principal.update()
+
+    if pontos > recorde:
+        recorde = pontos
+        with open(os.path.join(diretorio_principal, 'recorde.txt'), 'w') as arquivo:
+            arquivo.write(str(recorde))
     
-    janela.blit(font_pontos.render(f'{pontos:0>3}', True, (255, 255, 255)), (10, 10))
+    janela.blit(font_pontos.render(f'{pontos:0>3} {recorde:0>3}', True, (255, 255, 255)), (10, 10))
     pygame.display.flip()
