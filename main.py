@@ -8,6 +8,7 @@ pygame.init()
 
 diretorio_principal = os.path.dirname(__file__)
 diretorio_imagens = os.path.join(diretorio_principal, 'Imagens')
+diretorio_sons = os.path.join(diretorio_principal, 'Sons')
 
 largura, altura = 900, 600
 janela = pygame.display.set_mode((largura, altura))
@@ -20,6 +21,9 @@ relogio = pygame.time.Clock()
 font_pontos = pygame.font.SysFont('04b19', 60)
 font_game_over_principal = pygame.font.SysFont('04b19', 120)
 font_game_over_secundaria = pygame.font.SysFont('04b19', 40)
+som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'score_sound.wav'))
+som_score.set_volume(0.5)
+som_death = pygame.mixer.Sound(os.path.join(diretorio_sons, 'death_sound.wav'))
 sprite_background = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png'))
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
@@ -103,6 +107,7 @@ class ObstaculoUp(pygame.sprite.Sprite):
         global pontos
 
         if self.rect.center[0] - 150 in range(0, 27) and self.colidir:
+            som_score.play()
             self.colidir = False
             pontos += 1
 
@@ -162,6 +167,7 @@ while True:
         sprite_group_obstaculos.update()
     
     if bird.rect.bottom > 500:
+        som_death.play()
         fim = True
         while fim:
             for event in pygame.event.get():
@@ -177,6 +183,7 @@ while True:
             msg_rect_2 = msg_2.get_rect(center=(largura // 2, altura - 200))
             janela.blit(msg_1, msg_rect_1)
             janela.blit(msg_2, msg_rect_2)
+            janela.blit(font_pontos.render(f'{pontos:0>3} {recorde:0>3}', True, (255, 255, 255)), (10, 10))
             pygame.display.update()
 
         bird.rect.y = 220
