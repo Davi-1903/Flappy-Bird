@@ -31,7 +31,7 @@ som_game_over = pygame.mixer.Sound(os.path.join(diretorio_sons, 'death_sound.wav
 som_jump = pygame.mixer.Sound(os.path.join(diretorio_sons, 'jump.wav'))
 som_jump.set_volume(0.25)
 
-sprite_background = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png'))
+sprite_group_background = pygame.sprite.Group()
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 
@@ -86,18 +86,32 @@ class Bird(pygame.sprite.Sprite):
         self.pulo = True
 
 
+class Background(pygame.sprite.Sprite):
+    def __init__(self, x_pos: int) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png')).convert()
+        self.rect = self.image.get_rect()
+        self.rect.x = x_pos
+        self.rect.y = 0
+    
+    def update(self) -> None:
+        if self.rect.right <= 0:
+            self.rect.x = self.image.get_width()
+        self.rect.x -= velocidade / 4
+
+
 class Chao(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_chao.png')), (900, 112))
+        self.image = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_chao.png')), (896, 112))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x_pos
         self.rect.y = 500
     
     def update(self) -> None:
-        if self.rect.topright[0] < 0:
-            self.rect.x = largura - 4 # Ajuste fino...
+        if self.rect.right <= 0:
+            self.rect.x = self.image.get_width()
         self.rect.x -= velocidade
 
 
@@ -140,13 +154,16 @@ class ObstaculoDown(pygame.sprite.Sprite):
         self.rect.y = self.objeto.rect.bottom + 128
 
 
+for n in range(2):
+    sprite_group_background.add(Background(n * 900))
+
 for n in range(5):
     obstaculo = ObstaculoUp(n * 225 + largura)
     sprite_group_obstaculos.add(obstaculo)
     sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
 
 for n in range(2):
-    sprite_group_principal.add(Chao(n * 900))
+    sprite_group_principal.add(Chao(n * 896))
 
 bird = Bird()
 sprite_group_principal.add(bird)
@@ -154,7 +171,6 @@ sprite_group_principal.add(bird)
 while True:
     relogio.tick(30)
     janela.fill((0, 0, 0))
-    janela.blit(sprite_background, (0, 0))
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -165,6 +181,7 @@ while True:
             inicio = True
             bird.pular()
     
+    sprite_group_background.draw(janela)
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
 
@@ -172,6 +189,9 @@ while True:
         som_death.play()
         velocidade = 0
     
+    sprite_group_background.update()
+    sprite_group_principal.update()
+
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
@@ -205,9 +225,6 @@ while True:
             obstaculo = ObstaculoUp(n * 225 + largura)
             sprite_group_obstaculos.add(obstaculo)
             sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
-    
-
-    sprite_group_principal.update()
 
     if pontos > recorde:
         recorde = pontos
