@@ -46,10 +46,11 @@ pontos = 0
 class Bird(pygame.sprite.Sprite):
     def __init__(self) -> None:
         pygame.sprite.Sprite.__init__(self)
+        bird_n = randint(0, 2)
         self.imagens = []
         for n in range(4):
             img = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird.png'))
-            img = pygame.transform.scale(img.subsurface((n * 32, 0), (32, 32)), (64, 64))
+            img = pygame.transform.scale(img.subsurface((n * 32, bird_n * 32), (32, 32)), (64, 64))
             self.imagens.append(img)
         self.idx = 0
         self.image = self.imagens[self.idx]
