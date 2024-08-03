@@ -18,15 +18,23 @@ except:
     pass
 pygame.display.set_caption('Flappy Bird')
 relogio = pygame.time.Clock()
+
 font_pontos = pygame.font.SysFont('04b19', 60)
 font_game_over_principal = pygame.font.SysFont('04b19', 120)
 font_game_over_secundaria = pygame.font.SysFont('04b19', 40)
-som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'score_sound.wav'))
-som_score.set_volume(0.5)
-som_death = pygame.mixer.Sound(os.path.join(diretorio_sons, 'death_sound.wav'))
+
+som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'point.wav'))
+som_score.set_volume(0.25)
+som_death = pygame.mixer.Sound(os.path.join(diretorio_sons, 'hit.wav'))
+som_death.set_volume(0.25)
+som_game_over = pygame.mixer.Sound(os.path.join(diretorio_sons, 'death_sound.wav'))
+som_jump = pygame.mixer.Sound(os.path.join(diretorio_sons, 'jump.wav'))
+som_jump.set_volume(0.25)
+
 sprite_background = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png'))
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
+
 with open(os.path.join(diretorio_principal, 'recorde.txt'), 'r') as arquivo:
     recorde = int(arquivo.read())
 velocidade = 4
@@ -153,21 +161,23 @@ while True:
             pygame.quit()
             exit()
         if event.type == KEYDOWN and event.key == K_SPACE and not bird.pulo and velocidade:
+            som_jump.play()
             inicio = True
             bird.pular()
     
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
 
-    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask):
+    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
+        som_death.play()
         velocidade = 0
     
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
     
-    if bird.rect.bottom > 500:
-        som_death.play()
+    if bird.rect.bottom - 20 > 500:
+        som_game_over.play()
         fim = True
         while fim:
             for event in pygame.event.get():
