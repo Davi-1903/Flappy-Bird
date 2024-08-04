@@ -56,6 +56,7 @@ class Bird(pygame.sprite.Sprite):
         self.image = self.imagens[self.idx]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
+        self.angulo = 0
         self.velocidade = 0
         self.rect.x = 150
         self.rect.y = 220
@@ -72,15 +73,14 @@ class Bird(pygame.sprite.Sprite):
             self.rect.y -= 15
             self.velocidade = -15
         
-        angulo = 0
+        self.image = pygame.transform.rotate(self.imagens[int(self.idx)], self.angulo)
         if inicio:
-            angulo = (-self.velocidade + 18) * 3
-            if angulo > 15:
-                angulo = 15
-            if angulo < -45:
-                angulo = -45
+            self.angulo = (-self.velocidade + 18) * 3
+            if self.angulo > 15:
+                self.angulo = 15
+            if self.angulo < -45:
+                self.angulo = -45
         
-        self.image = pygame.transform.rotate(self.imagens[int(self.idx)], angulo)
         self.pulo = False
     
     def pular(self) -> None:
@@ -218,7 +218,7 @@ while True:
             pygame.display.update()
 
         bird.rect.y = 220
-        pontos = bird.velocidade = gravidade = 0
+        pontos = bird.angulo = bird.velocidade = gravidade = 0
         inicio = False
         velocidade = 4
         sprite_group_obstaculos.empty()
