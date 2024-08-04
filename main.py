@@ -59,7 +59,7 @@ class Bird(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.angulo = 0
         self.velocidade = 0
-        self.rect.x = 150
+        self.rect.x = largura / 4 - self.image.get_width() / 2
         self.rect.y = 220
         self.pulo = False
     
@@ -158,7 +158,7 @@ class ObstaculoUp(pygame.sprite.Sprite):
     def update(self) -> None:
         global pontos
 
-        if self.rect.center[0] - 150 in range(0, 27) and self.colidir:
+        if self.rect.center[0] <= 225 and self.colidir:
             som_score.play()
             self.colidir = False
             pontos += 1
