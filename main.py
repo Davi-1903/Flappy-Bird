@@ -232,7 +232,7 @@ while True:
         gravidade = 1.5
         sprite_group_obstaculos.update()
     
-    if bird.rect.bottom - 20 > 500:
+    if pygame.sprite.spritecollide(bird, filter(lambda item: item is not bird, sprite_group_principal), False, pygame.sprite.collide_mask):
         som_game_over.play()
         fim = True
         while fim:
