@@ -2,6 +2,7 @@ import pygame, os
 from pygame.locals import *
 from sys import exit
 from random import randint
+from math import ceil
 
 
 pygame.init()
@@ -37,7 +38,7 @@ sprite_group_obstaculos = pygame.sprite.Group()
 
 with open(os.path.join(diretorio_principal, 'recorde.txt'), 'r') as arquivo:
     recorde = int(arquivo.read())
-velocidade = 4
+velocidade = 5
 gravidade = 0
 inicio = False
 pontos = 0
@@ -87,32 +88,60 @@ class Bird(pygame.sprite.Sprite):
         self.pulo = True
 
 
-class Background(pygame.sprite.Sprite):
+class Nuvens(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_backdrop.png')).convert()
+        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_nuvens.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = x_pos
-        self.rect.y = 0
+        self.rect.y = 275
     
     def update(self) -> None:
         if self.rect.right <= 0:
-            self.rect.x = self.image.get_width()
-        self.rect.x -= velocidade / 4
+            self.rect.x = self.image.get_width() + self.rect.right
+        self.rect.x -= ceil(velocidade / 5)
+
+
+class Predios(pygame.sprite.Sprite):
+    def __init__(self, x_pos: int) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_predios.png')).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.x = x_pos
+        self.rect.y = 340
+    
+    def update(self) -> None:
+        if self.rect.right <= 0:
+            self.rect.x = self.image.get_width() + self.rect.right
+        self.rect.x -= ceil(velocidade / 3)
+
+
+class Arvores(pygame.sprite.Sprite):
+    def __init__(self, x_pos: int) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_arvores.png')).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.x = x_pos
+        self.rect.y = 403
+    
+    def update(self) -> None:
+        if self.rect.right <= 0:
+            self.rect.x = self.image.get_width() + self.rect.right
+        self.rect.x -= ceil(velocidade / 2)
 
 
 class Chao(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_chao.png')), (896, 112))
-        self.rect = self.image.get_rect()
+        self.image = pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_chao.png')).convert()
         self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect()
         self.rect.x = x_pos
         self.rect.y = 500
     
     def update(self) -> None:
         if self.rect.right <= 0:
-            self.rect.x = self.image.get_width()
+            self.rect.x = self.image.get_width() + self.rect.right
         self.rect.x -= velocidade
 
 
@@ -156,7 +185,13 @@ class ObstaculoDown(pygame.sprite.Sprite):
 
 
 for n in range(2):
-    sprite_group_background.add(Background(n * 900))
+    sprite_group_background.add(Nuvens(n * 900))
+
+for n in range(2):
+    sprite_group_background.add(Predios(n * 900))
+
+for n in range(2):
+    sprite_group_background.add(Arvores(n * 900))
 
 for n in range(5):
     obstaculo = ObstaculoUp(n * 225 + largura)
@@ -164,14 +199,14 @@ for n in range(5):
     sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
 
 for n in range(2):
-    sprite_group_principal.add(Chao(n * 896))
+    sprite_group_principal.add(Chao(n * 910))
 
 bird = Bird()
 sprite_group_principal.add(bird)
 
 while True:
     relogio.tick(30)
-    janela.fill((0, 0, 0))
+    janela.fill((0, 153, 204))
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -220,7 +255,7 @@ while True:
         bird.rect.y = 220
         pontos = bird.angulo = bird.velocidade = gravidade = 0
         inicio = False
-        velocidade = 4
+        velocidade = 5
         sprite_group_obstaculos.empty()
         for n in range(5):
             obstaculo = ObstaculoUp(n * 225 + largura)
