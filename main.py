@@ -21,7 +21,7 @@ pygame.display.set_caption('Flappy Bird')
 relogio = pygame.time.Clock()
 
 font_pontos = pygame.font.SysFont('04b19', 60)
-font_game_over_principal = pygame.font.SysFont('04b19', 120)
+font_game_over = pygame.font.SysFont('04b19', 60)
 font_game_over_secundaria = pygame.font.SysFont('04b19', 40)
 
 som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'point.wav'))
@@ -221,16 +221,23 @@ while True:
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
 
+    sprite_group_background.update()
+    sprite_group_principal.update()
+
     if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
         som_death.play()
         velocidade = 0
     
-    sprite_group_background.update()
-    sprite_group_principal.update()
-
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
+        pontos_placar = font_pontos.render(str(pontos), True, (255, 255, 255))
+        pontos_placar_2 = font_pontos.render(str(pontos), True, (48, 48, 64))
+        janela.blit(pontos_placar_2, pontos_placar_2.get_rect(center=(largura // 2 + 4, 54))) # Gambiarra...
+        janela.blit(pontos_placar, pontos_placar.get_rect(center=(largura // 2, 50)))
+    else:
+        name = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_name.png')).convert_alpha(), (384, 88))
+        janela.blit(name, name.get_rect(center=(largura // 2, 100)))
     
     if pygame.sprite.spritecollide(bird, filter(lambda item: item is not bird, sprite_group_principal), False, pygame.sprite.collide_mask):
         som_game_over.play()
@@ -243,14 +250,21 @@ while True:
                 if event.type == KEYDOWN and event.key == K_r:
                     fim = False
             
-            msg_1 = font_game_over_principal.render('Game over', True, (48, 48, 64))
-            msg_rect_1 = msg_1.get_rect(center=(largura // 2, altura // 2))
-            msg_2 = font_game_over_secundaria.render('R para reiniciar', True, (48, 48, 64))
-            msg_rect_2 = msg_2.get_rect(center=(largura // 2, altura - 200))
-            janela.blit(msg_1, msg_rect_1)
-            janela.blit(msg_2, msg_rect_2)
-            janela.blit(font_pontos.render(f'{pontos:0>3} {recorde:0>3}', True, (255, 255, 255)), (10, 10))
-            pygame.display.update()
+            game_over = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_game_over.png')).convert_alpha(), (460, 95))
+            janela.blit(game_over, game_over.get_rect(center=(largura // 2, 140)))
+
+            janela.blit(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_placar.png')).convert_alpha(), (225, 250))
+            best_score = font_game_over.render(f'Best {recorde:>5}', True, (255, 255, 255))
+            best_score_2 = font_game_over.render(f'Best {recorde:>5}', True, (48, 48, 64)) 
+            janela.blit(best_score_2, best_score_2.get_rect(center=(largura // 2 + 4, altura // 2 + 4))) # Gambiarra...
+            janela.blit(best_score, best_score.get_rect(center=(largura // 2, altura // 2)))
+
+            msg_reiniciar = font_game_over_secundaria.render('R para reiniciar', True, (255, 255, 255))
+            msg_reiniciar_2 = font_game_over_secundaria.render('R para reiniciar', True, (48, 48, 64))
+            janela.blit(msg_reiniciar_2, msg_reiniciar_2.get_rect(center=(largura // 2 + 4, 404))) # Gambiarra...
+            janela.blit(msg_reiniciar, msg_reiniciar.get_rect(center=(largura // 2, 400)))
+
+            pygame.display.flip()
 
         bird.rect.y = 220
         pontos = bird.angulo = bird.velocidade = gravidade = 0
@@ -267,5 +281,4 @@ while True:
         with open(os.path.join(diretorio_principal, 'recorde.txt'), 'w') as arquivo:
             arquivo.write(str(recorde))
     
-    janela.blit(font_pontos.render(f'{pontos:0>3} {recorde:0>3}', True, (255, 255, 255)), (10, 10))
     pygame.display.flip()
