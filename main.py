@@ -212,7 +212,7 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             exit()
-        if event.type == KEYDOWN and event.key == K_SPACE and not bird.pulo and velocidade:
+        if event.type == KEYDOWN and event.key in [K_SPACE, K_UP, K_w] and not bird.pulo and velocidade:
             som_jump.play()
             inicio = True
             bird.pular()
