@@ -3,6 +3,7 @@ from pygame.locals import *
 from sys import exit
 from random import randint
 from math import ceil
+from time import sleep
 
 
 pygame.init()
@@ -21,8 +22,7 @@ pygame.display.set_caption('Flappy Bird')
 relogio = pygame.time.Clock()
 
 font_pontos = pygame.font.SysFont('04b19', 60)
-font_game_over = pygame.font.SysFont('04b19', 60)
-font_game_over_secundaria = pygame.font.SysFont('04b19', 40)
+font_start = pygame.font.SysFont('04b19', 40)
 
 som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'point.wav'))
 som_score.set_volume(0.25)
@@ -36,8 +36,6 @@ sprite_group_background = pygame.sprite.Group()
 sprite_group_principal = pygame.sprite.Group()
 sprite_group_obstaculos = pygame.sprite.Group()
 
-with open(os.path.join(diretorio_principal, 'recorde.txt'), 'r') as arquivo:
-    recorde = int(arquivo.read())
 velocidade = 5
 gravidade = 0
 inicio = False
@@ -224,10 +222,6 @@ while True:
     sprite_group_background.update()
     sprite_group_principal.update()
 
-    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
-        som_death.play()
-        velocidade = 0
-    
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
@@ -238,33 +232,20 @@ while True:
     else:
         name = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_name.png')).convert_alpha(), (384, 88))
         janela.blit(name, name.get_rect(center=(largura // 2, 100)))
+        start_msg = font_start.render('Press SPACE, W or UP to start', False, (82, 55, 71))
+        janela.blit(start_msg, start_msg.get_rect(center=(largura // 2, 557)))
+
+    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
+        som_death.play()
+        velocidade = 0
     
+    # A colisão com o chão está meio estranha, acusa antes de realmente colidir
     if pygame.sprite.spritecollide(bird, filter(lambda item: item is not bird, sprite_group_principal), False, pygame.sprite.collide_mask):
         som_game_over.play()
-        fim = True
-        while fim:
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    exit()
-                if event.type == KEYDOWN and event.key == K_r:
-                    fim = False
-            
-            game_over = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_game_over.png')).convert_alpha(), (460, 95))
-            janela.blit(game_over, game_over.get_rect(center=(largura // 2, 140)))
-
-            janela.blit(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_placar.png')).convert_alpha(), (225, 250))
-            best_score = font_game_over.render(f'Best {recorde:>5}', True, (255, 255, 255))
-            best_score_2 = font_game_over.render(f'Best {recorde:>5}', True, (48, 48, 64)) 
-            janela.blit(best_score_2, best_score_2.get_rect(center=(largura // 2 + 4, altura // 2 + 4))) # Gambiarra...
-            janela.blit(best_score, best_score.get_rect(center=(largura // 2, altura // 2)))
-
-            msg_reiniciar = font_game_over_secundaria.render('R para reiniciar', True, (255, 255, 255))
-            msg_reiniciar_2 = font_game_over_secundaria.render('R para reiniciar', True, (48, 48, 64))
-            janela.blit(msg_reiniciar_2, msg_reiniciar_2.get_rect(center=(largura // 2 + 4, 404))) # Gambiarra...
-            janela.blit(msg_reiniciar, msg_reiniciar.get_rect(center=(largura // 2, 400)))
-
-            pygame.display.flip()
+        game_over = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_game_over.png')).convert_alpha(), (564, 114))
+        janela.blit(game_over, game_over.get_rect(center=(largura // 2, altura // 2)))
+        pygame.display.flip()
+        sleep(3)
 
         bird.rect.y = 220
         pontos = bird.angulo = bird.velocidade = gravidade = 0
@@ -276,9 +257,4 @@ while True:
             sprite_group_obstaculos.add(obstaculo)
             sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
 
-    if pontos > recorde:
-        recorde = pontos
-        with open(os.path.join(diretorio_principal, 'recorde.txt'), 'w') as arquivo:
-            arquivo.write(str(recorde))
-    
     pygame.display.flip()
