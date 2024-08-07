@@ -21,9 +21,6 @@ except:
 pygame.display.set_caption('Flappy Bird')
 relogio = pygame.time.Clock()
 
-font_pontos = pygame.font.SysFont('04b19', 60)
-font_start = pygame.font.SysFont('04b19', 40)
-
 som_score = pygame.mixer.Sound(os.path.join(diretorio_sons, 'point.wav'))
 som_score.set_volume(0.25)
 som_death = pygame.mixer.Sound(os.path.join(diretorio_sons, 'hit.wav'))
@@ -40,6 +37,15 @@ velocidade = 5
 gravidade = 0
 inicio = False
 pontos = 0
+
+
+def draw_text(msg: str, font: str, tam: int, pos: tuple[int, int],  color: tuple[int, int, int] = (0, 0, 0), shadow: None | tuple[int, int, tuple] = None) -> None:
+    font = pygame.font.SysFont(font, tam)
+    if shadow:
+        msg_formatada = font.render(msg, True, shadow[2])
+        janela.blit(msg_formatada, msg_formatada.get_rect(center=(pos[0] + shadow[0], pos[1] + shadow[1])))
+    msg_formatada = font.render(msg, True, color)
+    janela.blit(msg_formatada, msg_formatada.get_rect(center=pos))
 
 
 class Bird(pygame.sprite.Sprite):
@@ -225,15 +231,11 @@ while True:
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
-        pontos_placar = font_pontos.render(str(pontos), True, (255, 255, 255))
-        pontos_placar_2 = font_pontos.render(str(pontos), True, (48, 48, 64))
-        janela.blit(pontos_placar_2, pontos_placar_2.get_rect(center=(largura // 2 + 4, 54))) # Gambiarra...
-        janela.blit(pontos_placar, pontos_placar.get_rect(center=(largura // 2, 50)))
+        draw_text(str(pontos), '04b19', 60, (largura // 2, 50), (255, 255, 255), (4, 4, (48, 48, 64)))
     else:
         name = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_name.png')).convert_alpha(), (384, 88))
         janela.blit(name, name.get_rect(center=(largura // 2, 100)))
-        start_msg = font_start.render('Press SPACE, W or UP to start', False, (82, 55, 71))
-        janela.blit(start_msg, start_msg.get_rect(center=(largura // 2, 557)))
+        draw_text('Press SPACE, W or UP to start', '04b19', 40, (largura // 2, 557), (82, 55, 71))
 
     if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
         som_death.play()
