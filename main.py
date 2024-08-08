@@ -3,7 +3,6 @@ from pygame.locals import *
 from sys import exit
 from random import randint
 from math import ceil
-from time import sleep
 
 
 pygame.init()
@@ -246,8 +245,17 @@ while True:
         som_game_over.play()
         game_over = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_game_over.png')).convert_alpha(), (564, 114))
         janela.blit(game_over, game_over.get_rect(center=(largura // 2, altura // 2)))
-        pygame.display.flip()
-        sleep(3)
+        fim = True
+        while fim:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == KEYDOWN and event.key == K_r:
+                    fim = False
+
+            draw_text('R para reiniciar', '04b19', 40, (largura // 2, 557), (82, 55, 71))
+            pygame.display.flip()
 
         bird.rect.y = 220
         pontos = bird.angulo = bird.velocidade = gravidade = 0
