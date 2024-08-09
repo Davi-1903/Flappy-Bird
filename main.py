@@ -219,13 +219,10 @@ while True:
             som_jump.play()
             inicio = True
             bird.pular()
-    
+
     sprite_group_background.draw(janela)
     sprite_group_obstaculos.draw(janela)
     sprite_group_principal.draw(janela)
-
-    sprite_group_background.update()
-    sprite_group_principal.update()
 
     if inicio:
         gravidade = 1.5
@@ -240,7 +237,6 @@ while True:
         som_death.play()
         velocidade = 0
     
-    # A colisão com o chão está meio estranha, acusa antes de realmente colidir
     if pygame.sprite.spritecollide(bird, filter(lambda item: item is not bird, sprite_group_principal), False, pygame.sprite.collide_mask):
         som_game_over.play()
         game_over = pygame.transform.scale(pygame.image.load(os.path.join(diretorio_imagens, 'flappy_bird_game_over.png')).convert_alpha(), (564, 114))
@@ -267,4 +263,6 @@ while True:
             sprite_group_obstaculos.add(obstaculo)
             sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
 
+    sprite_group_background.update()
+    sprite_group_principal.update()
     pygame.display.flip()
