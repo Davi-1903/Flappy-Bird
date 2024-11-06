@@ -7,7 +7,7 @@ from math import ceil
 
 pygame.init()
 
-diretorio_principal = os.path.dirname(__file__)
+diretorio_principal = os.path.join(os.path.dirname(__file__), 'lib')
 diretorio_imagens = os.path.join(diretorio_principal, 'Imagens')
 diretorio_sons = os.path.join(diretorio_principal, 'Sons')
 
