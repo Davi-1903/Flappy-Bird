@@ -61,40 +61,49 @@ class Bird(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.sprites_config()
         self.image_idx = 0
-        self.image = self.sprites[self.image_idx]
-        self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.angulo = 0
         self.velocidade = 0
-        self.rect.x = LARGURA / 4 - self.image.get_width() / 2
-        self.rect.y = 220
+        self.x_pos = LARGURA / 4
+        self.y_pos = 220
+        self.exibicao_config()
         self.pulo = False
     
     def update(self) -> None:
-        self.image_idx += 0.5
-        if self.image_idx >= len(self.sprites):
-            self.image_idx = 0
-        
-        self.velocidade += gravidade
-        self.rect.y += self.velocidade
+        self.animar()
+        self.gravidade()
         if self.pulo:
-            self.rect.y -= 15
             self.velocidade = -15
-        
-        self.image = pygame.transform.rotate(self.sprites[int(self.image_idx)], self.angulo)
+        self.exibicao_config()
+        self.pulo = False
+    
+    def rotacionar(self):
         if inicio:
             self.angulo = (-self.velocidade + 18) * 3
             if self.angulo > 15:
                 self.angulo = 15
             if self.angulo < -45:
                 self.angulo = -45
-        
-        self.pulo = False
+        self.image = pygame.transform.rotate(self.sprites[int(self.image_idx)], self.angulo)
+    
+    def exibicao_config(self):
+        self.image = self.sprites[int(self.image_idx)]
+        self.rotacionar()
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.mask = pygame.mask.from_surface(self.image)
+    
+    def gravidade(self):
+        self.velocidade += gravidade
+        self.y_pos += self.velocidade
     
     def sprites_config(self):
         numero = randrange(0, 12, 4)
         sprite_sheet = SpriteSheet(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird.png'), (64, 64))
         self.sprites = sprite_sheet.get_sprites()[numero:numero + 4]
+    
+    def animar(self):
+        self.image_idx += 0.5
+        if self.image_idx >= len(self.sprites):
+            self.image_idx = 0
     
     def pular(self) -> None:
         self.pulo = True
@@ -262,7 +271,7 @@ while True:
             draw_text('R para reiniciar', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
             pygame.display.flip()
 
-        bird.rect.y = 220
+        bird.y_pos = 220
         pontos = bird.angulo = bird.velocidade = gravidade = 0
         inicio = False
         velocidade = 5
