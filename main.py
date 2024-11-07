@@ -57,7 +57,7 @@ class SpriteSheet:
 
 
 class Bird(pygame.sprite.Sprite):
-    def __init__(self) -> None:
+    def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.sprites_config()
         self.image_idx = 0
@@ -75,7 +75,7 @@ class Bird(pygame.sprite.Sprite):
         self.exibicao_config()
         self.pulo = False
     
-    def rotacionar(self):
+    def rotacionar(self) -> None:
         if inicio:
             self.angulo = (-self.velocidade + 18) * 3
             if self.angulo > 15:
@@ -84,22 +84,22 @@ class Bird(pygame.sprite.Sprite):
                 self.angulo = -45
         self.image = pygame.transform.rotate(self.sprites[int(self.image_idx)], self.angulo)
     
-    def exibicao_config(self):
+    def exibicao_config(self) -> None:
         self.image = self.sprites[int(self.image_idx)]
         self.rotacionar()
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.rect_colision = pygame.Rect(self.x_pos - 16, self.y_pos - 14, 34, 27)
     
-    def gravidade(self):
+    def gravidade(self) -> None:
         self.velocidade += gravidade
         self.y_pos += self.velocidade
     
-    def sprites_config(self):
+    def sprites_config(self) -> None:
         numero = randrange(0, 12, 4)
         sprite_sheet = SpriteSheet(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird.png'), (64, 64))
         self.sprites = sprite_sheet.get_sprites()[numero:numero + 4]
     
-    def animar(self):
+    def animar(self) -> None:
         self.image_idx += 0.5
         if self.image_idx >= len(self.sprites):
             self.image_idx = 0
@@ -123,7 +123,7 @@ class Nuvens(pygame.sprite.Sprite):
 
 
 class Predios(pygame.sprite.Sprite):
-    def __init__(self, x_pos: int) -> None:
+    def __init__(self, x_pos: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_predios.png')).convert_alpha()
         self.rect = self.image.get_rect()
@@ -137,7 +137,7 @@ class Predios(pygame.sprite.Sprite):
 
 
 class Arvores(pygame.sprite.Sprite):
-    def __init__(self, x_pos: int) -> None:
+    def __init__(self, x_pos: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_arvores.png')).convert_alpha()
         self.rect = self.image.get_rect()
@@ -151,7 +151,7 @@ class Arvores(pygame.sprite.Sprite):
 
 
 class Chao(pygame.sprite.Sprite):
-    def __init__(self, x_pos: int) -> None:
+    def __init__(self, x_pos: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_chao.png')).convert()
         self.rect = self.image.get_rect()
@@ -165,7 +165,7 @@ class Chao(pygame.sprite.Sprite):
 
 
 class ObstaculoUp(pygame.sprite.Sprite):
-    def __init__(self, x_pos: int) -> None:
+    def __init__(self, x_pos: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_superior.png')).convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
@@ -189,7 +189,7 @@ class ObstaculoUp(pygame.sprite.Sprite):
 
 
 class ObstaculoDown(pygame.sprite.Sprite):
-    def __init__(self, objeto) -> None:
+    def __init__(self, objeto):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_inferior.png')).convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
