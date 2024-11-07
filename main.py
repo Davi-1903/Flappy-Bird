@@ -62,10 +62,9 @@ class Bird(pygame.sprite.Sprite):
         self.sprites_config()
         self.image_idx = 0
         self.angulo = 0
-        self.velocidade = 0
-        self.x_pos = LARGURA / 4
-        self.y_pos = 220
+        self.x_pos, self.y_pos = LARGURA / 4, 220
         self.exibicao_config()
+        self.velocidade = 0
         self.pulo = False
     
     def update(self) -> None:
@@ -89,7 +88,7 @@ class Bird(pygame.sprite.Sprite):
         self.image = self.sprites[int(self.image_idx)]
         self.rotacionar()
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-        self.mask = pygame.mask.from_surface(self.image)
+        self.rect_colision = pygame.Rect(self.x_pos - 16, self.y_pos - 14, 34, 27)
     
     def gravidade(self):
         self.velocidade += gravidade
@@ -155,7 +154,6 @@ class Chao(pygame.sprite.Sprite):
     def __init__(self, x_pos: int) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_chao.png')).convert()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = x_pos
         self.rect.y = 500
@@ -171,7 +169,6 @@ class ObstaculoUp(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_superior.png')).convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x_pos
         self.rect.y = randint(-330, -100)
         self.colidir = True
@@ -196,7 +193,6 @@ class ObstaculoDown(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_inferior.png')).convert_alpha(), (52, 400))
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.objeto = objeto
         self.update()
     
@@ -251,35 +247,40 @@ while True:
         janela.blit(name, name.get_rect(center=(LARGURA // 2, 100)))
         draw_text('Press SPACE, W or UP to start', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
 
-    if pygame.sprite.spritecollide(bird, sprite_group_obstaculos, False, pygame.sprite.collide_mask) and velocidade != 0:
-        som_death.play()
-        velocidade = 0
+    for obstaculo in sprite_group_obstaculos:
+        if bird.rect_colision.colliderect(obstaculo.rect.x - velocidade, obstaculo.rect.y - ceil(bird.velocidade), obstaculo.rect.width, obstaculo.rect.height) and velocidade != 0:
+            som_death.play()
+            velocidade = 0
+            break
     
-    if pygame.sprite.spritecollide(bird, filter(lambda item: item is not bird, sprite_group_principal), False, pygame.sprite.collide_mask):
-        som_game_over.play()
-        game_over = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_game_over.png')).convert_alpha(), (564, 114))
-        janela.blit(game_over, game_over.get_rect(center=(LARGURA // 2, ALTURA // 2)))
-        fim = True
-        while fim:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                    fim = False
+    for item in sprite_group_principal:
+        if item is not bird:
+            if bird.rect_colision.colliderect(item.rect.x, item.rect.y, item.rect.width, item.rect.height):
+                som_game_over.play()
+                game_over = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_game_over.png')).convert_alpha(), (564, 114))
+                janela.blit(game_over, game_over.get_rect(center=(LARGURA // 2, ALTURA // 2)))
+                fim = True
+                while fim:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            exit()
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                            fim = False
 
-            draw_text('R para reiniciar', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
-            pygame.display.flip()
+                    draw_text('R para reiniciar', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
+                    pygame.display.flip()
 
-        bird.y_pos = 220
-        pontos = bird.angulo = bird.velocidade = gravidade = 0
-        inicio = False
-        velocidade = 5
-        sprite_group_obstaculos.empty()
-        for n in range(5):
-            obstaculo = ObstaculoUp(n * 225 + LARGURA)
-            sprite_group_obstaculos.add(obstaculo)
-            sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
+                bird.y_pos = 220
+                pontos = bird.angulo = bird.velocidade = gravidade = 0
+                inicio = False
+                velocidade = 5
+                sprite_group_obstaculos.empty()
+                for n in range(5):
+                    obstaculo = ObstaculoUp(n * 225 + LARGURA)
+                    sprite_group_obstaculos.add(obstaculo)
+                    sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
+                break
 
     sprite_group_background.update()
     sprite_group_principal.update()
