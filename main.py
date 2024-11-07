@@ -25,12 +25,13 @@ som_jump.set_volume(0.25)
 
 sprite_group_background = pygame.sprite.Group()
 sprite_group_principal = pygame.sprite.Group()
-sprite_group_obstaculos = pygame.sprite.Group()
+sprite_group_obstaculos = []
 
 velocidade = 5
 gravidade = 0
 inicio = False
 pontos = 0
+permissao = [True] * 5
 
 
 def draw_text(msg: str, font: str, tam: int, pos: tuple[int, int],  color: tuple[int, int, int] = (0, 0, 0), shadow: None | tuple[int, int, tuple] = None) -> None:
@@ -163,42 +164,32 @@ class Chao(pygame.sprite.Sprite):
             self.rect.x = self.image.get_width() + self.rect.right
         self.rect.x -= velocidade
 
-
-class ObstaculoUp(pygame.sprite.Sprite):
+class Obstaculo:
     def __init__(self, x_pos: int):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_superior.png')).convert_alpha(), (52, 400))
-        self.rect = self.image.get_rect()
-        self.rect.x = x_pos
-        self.rect.y = randint(-330, -100)
-        self.colidir = True
+        self.x_pos = x_pos
+        self.images = [
+            pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_superior.png')).convert_alpha(),
+            pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_inferior.png')).convert_alpha()                                           
+        ]
+        self.new_position()
     
-    def update(self) -> None:
-        global pontos
-
-        if self.rect.center[0] <= 225 and self.colidir:
-            som_score.play()
-            self.colidir = False
-            pontos += 1
-
-        if self.rect.topright[0] <= 0:
-            self.colidir = True
-            self.rect.x = LARGURA + 173
-            self.rect.y = randint(-330, -100)
-        self.rect.x -= velocidade
-
-
-class ObstaculoDown(pygame.sprite.Sprite):
-    def __init__(self, objeto):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_obstaculo_inferior.png')).convert_alpha(), (52, 400))
-        self.rect = self.image.get_rect()
-        self.objeto = objeto
-        self.update()
+    def new_position(self):
+        y_pos = randint(-300, -100)
+        self.rects = [
+            self.images[0].get_rect(topleft=(self.x_pos, y_pos)),
+            self.images[1].get_rect(topleft=(self.x_pos, y_pos + 528))
+        ]
     
-    def update(self) -> None:
-        self.rect.x = self.objeto.rect.x
-        self.rect.y = self.objeto.rect.bottom + 128
+    def draw(self, screen: pygame.Surface):
+        for idx, rect in enumerate(self.rects):
+            screen.blit(self.images[idx], rect)
+    
+    def mover(self):
+        for rect in self.rects:
+            rect.x -= velocidade
+        if rect.right <= 0:
+            self.x_pos = LARGURA - rect.right + 173
+            self.new_position()
 
 
 for n in range(2):
@@ -211,9 +202,7 @@ for n in range(2):
     sprite_group_background.add(Arvores(n * 900))
 
 for n in range(5):
-    obstaculo = ObstaculoUp(n * 225 + LARGURA)
-    sprite_group_obstaculos.add(obstaculo)
-    sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
+    sprite_group_obstaculos.append(Obstaculo(n * 225 + LARGURA))
 
 for n in range(2):
     sprite_group_principal.add(Chao(n * 910))
@@ -235,12 +224,22 @@ while True:
             bird.pular()
 
     sprite_group_background.draw(janela)
-    sprite_group_obstaculos.draw(janela)
+    for obstaculo in sprite_group_obstaculos:
+        obstaculo.draw(janela)
     sprite_group_principal.draw(janela)
+
+    for idx, obstaculo in enumerate(sprite_group_obstaculos):
+        if obstaculo.rects[0].centerx <= 225 and permissao[idx]:
+            som_score.play()
+            permissao[idx] = False
+            pontos += 1
+        elif obstaculo.rects[0].left >= LARGURA:
+            permissao[idx] = True
 
     if inicio:
         gravidade = 1.5
-        sprite_group_obstaculos.update()
+        for obstaculo in sprite_group_obstaculos:
+            obstaculo.mover()
         draw_text(str(pontos), '04b19', 60, (LARGURA // 2, 50), 'white', (4, 4, (48, 48, 64)))
     else:
         name = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_name.png')).convert_alpha(), (384, 88))
@@ -248,10 +247,11 @@ while True:
         draw_text('Press SPACE, W or UP to start', '04b19', 40, (LARGURA // 2, 557), 'white', (5, 5, (48, 48, 64)))
 
     for obstaculo in sprite_group_obstaculos:
-        if bird.rect_colision.colliderect(obstaculo.rect.x - velocidade, obstaculo.rect.y - ceil(bird.velocidade), obstaculo.rect.width, obstaculo.rect.height) and velocidade != 0:
-            som_death.play()
-            velocidade = 0
-            break
+        for rect in obstaculo.rects:
+            if bird.rect_colision.colliderect(rect.x - velocidade, rect.y - ceil(bird.velocidade), rect.width, rect.height) and velocidade != 0:
+                som_death.play()
+                velocidade = 0
+                break
     
     for item in sprite_group_principal:
         if item is not bird:
@@ -275,11 +275,9 @@ while True:
                 pontos = bird.angulo = bird.velocidade = gravidade = 0
                 inicio = False
                 velocidade = 5
-                sprite_group_obstaculos.empty()
+                sprite_group_obstaculos.clear()
                 for n in range(5):
-                    obstaculo = ObstaculoUp(n * 225 + LARGURA)
-                    sprite_group_obstaculos.add(obstaculo)
-                    sprite_group_obstaculos.add(ObstaculoDown(obstaculo))
+                    sprite_group_obstaculos.append(Obstaculo(n * 225 + LARGURA))
                 break
 
     sprite_group_background.update()
