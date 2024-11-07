@@ -241,11 +241,11 @@ while True:
     if inicio:
         gravidade = 1.5
         sprite_group_obstaculos.update()
-        draw_text(str(pontos), '04b19', 60, (LARGURA // 2, 50), (255, 255, 255), (4, 4, (48, 48, 64)))
+        draw_text(str(pontos), '04b19', 60, (LARGURA // 2, 50), 'white', (4, 4, (48, 48, 64)))
     else:
         name = pygame.transform.scale(pygame.image.load(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird_name.png')).convert_alpha(), (384, 88))
         janela.blit(name, name.get_rect(center=(LARGURA // 2, 100)))
-        draw_text('Press SPACE, W or UP to start', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
+        draw_text('Press SPACE, W or UP to start', '04b19', 40, (LARGURA // 2, 557), 'white', (5, 5, (48, 48, 64)))
 
     for obstaculo in sprite_group_obstaculos:
         if bird.rect_colision.colliderect(obstaculo.rect.x - velocidade, obstaculo.rect.y - ceil(bird.velocidade), obstaculo.rect.width, obstaculo.rect.height) and velocidade != 0:
@@ -268,7 +268,7 @@ while True:
                         if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                             fim = False
 
-                    draw_text('R para reiniciar', '04b19', 40, (LARGURA // 2, 557), (82, 55, 71))
+                    draw_text('R para reiniciar', '04b19', 40, (LARGURA // 2, 557), 'white', (5, 5, (48, 48, 64)))
                     pygame.display.flip()
 
                 bird.y_pos = 220
