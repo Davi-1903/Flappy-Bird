@@ -96,7 +96,7 @@ class Bird(pygame.sprite.Sprite):
         self.y_pos += self.velocidade
     
     def sprites_config(self) -> None:
-        numero = randrange(0, 12, 4)
+        numero = randrange(0, 16, 4)
         sprite_sheet = SpriteSheet(os.path.join(DIRETORIO_IMAGENS, 'flappy_bird.png'), (64, 64))
         self.sprites = sprite_sheet.get_sprites()[numero:numero + 4]
     
